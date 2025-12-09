@@ -20,12 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2!o!-l)s8zvp@xx4sbb!me%u_)kizn%-r=5$b@k+kdzyh6*2e4'
+import os
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise RuntimeError("The DJANGO_SECRET_KEY environment variable is not set. Please set it to a secure value.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-import os
 codespace_name = os.environ.get('CODESPACE_NAME', None)
 if codespace_name:
     ALLOWED_HOSTS = [f'{codespace_name}-8000.app.github.dev', 'localhost', '127.0.0.1']
@@ -90,8 +91,8 @@ DATABASES = {
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
             'host': 'localhost',
-            'port': 27017,
-            'username': '',
+            'username': os.environ.get('MONGODB_USERNAME', ''),
+            'password': os.environ.get('MONGODB_PASSWORD', ''),
             'password': '',
             'authSource': 'admin',
         },
@@ -131,12 +132,26 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# Static files (CSS, JavaScript, Images)
+
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
 
-# CORS settings
+# Allow only trusted origins for CORS
+CORS_ALLOW_ALL_ORIGINS = False
+
+# Build CORS_ALLOWED_ORIGINS based on environment
+if codespace_name:
+    CORS_ALLOWED_ORIGINS = [
+        f"https://{codespace_name}-8000.app.github.dev",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = ['*']
