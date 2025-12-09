@@ -23,7 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
-    raise RuntimeError("The DJANGO_SECRET_KEY environment variable is not set. Please set it to a secure value.")
+    # For development/learning purposes, use a default key
+    # In production, always set DJANGO_SECRET_KEY environment variable
+    SECRET_KEY = 'django-insecure-dev-key-octofit-tracker-demo-only-do-not-use-in-production'
+    import sys
+    print("WARNING: Using default SECRET_KEY. Set DJANGO_SECRET_KEY environment variable for production.", file=sys.stderr)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -93,7 +97,6 @@ DATABASES = {
             'host': 'localhost',
             'username': os.environ.get('MONGODB_USERNAME', ''),
             'password': os.environ.get('MONGODB_PASSWORD', ''),
-            'password': '',
             'authSource': 'admin',
         },
     }
