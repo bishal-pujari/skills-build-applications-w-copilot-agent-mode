@@ -23,14 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
-    # For development/learning purposes, use a default key
+    # For development/learning purposes, generate a random key
     # In production, always set DJANGO_SECRET_KEY environment variable
-    SECRET_KEY = 'django-insecure-dev-key-octofit-tracker-demo-only-do-not-use-in-production'
+    from django.core.management.utils import get_random_secret_key
+    SECRET_KEY = get_random_secret_key()
     import sys
-    print("WARNING: Using default SECRET_KEY. Set DJANGO_SECRET_KEY environment variable for production.", file=sys.stderr)
+    print("WARNING: Using auto-generated SECRET_KEY. Set DJANGO_SECRET_KEY environment variable for production.", file=sys.stderr)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 codespace_name = os.environ.get('CODESPACE_NAME', None)
 if codespace_name:
     ALLOWED_HOSTS = [f'{codespace_name}-8000.app.github.dev', 'localhost', '127.0.0.1']
@@ -147,17 +148,32 @@ CORS_ALLOW_ALL_ORIGINS = False
 if codespace_name:
     CORS_ALLOWED_ORIGINS = [
         f"https://{codespace_name}-8000.app.github.dev",
+        f"https://{codespace_name}-3000.app.github.dev",
+        "http://localhost:3000",
         "http://localhost:8000",
+        "http://127.0.0.1:3000",
         "http://127.0.0.1:8000",
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
         "http://localhost:8000",
+        "http://127.0.0.1:3000",
         "http://127.0.0.1:8000",
     ]
-CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ['*']
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
 
 # Default primary key field type
