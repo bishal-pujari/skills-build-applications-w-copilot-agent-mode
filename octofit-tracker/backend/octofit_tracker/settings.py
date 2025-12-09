@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
+import sys
 from pathlib import Path
+from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-import os
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 if not SECRET_KEY:
-    raise RuntimeError("The DJANGO_SECRET_KEY environment variable is not set. Please set it to a secure value.")
+    # For development/learning purposes, generate a random key
+    # In production, always set DJANGO_SECRET_KEY environment variable
+    SECRET_KEY = get_random_secret_key()
+    print("WARNING: Using auto-generated SECRET_KEY. Set DJANGO_SECRET_KEY environment variable for production.", file=sys.stderr)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 codespace_name = os.environ.get('CODESPACE_NAME', None)
 if codespace_name:
     ALLOWED_HOSTS = [f'{codespace_name}-8000.app.github.dev', 'localhost', '127.0.0.1']
@@ -93,7 +98,6 @@ DATABASES = {
             'host': 'localhost',
             'username': os.environ.get('MONGODB_USERNAME', ''),
             'password': os.environ.get('MONGODB_PASSWORD', ''),
-            'password': '',
             'authSource': 'admin',
         },
     }
@@ -144,17 +148,32 @@ CORS_ALLOW_ALL_ORIGINS = False
 if codespace_name:
     CORS_ALLOWED_ORIGINS = [
         f"https://{codespace_name}-8000.app.github.dev",
+        f"https://{codespace_name}-3000.app.github.dev",
+        "http://localhost:3000",
         "http://localhost:8000",
+        "http://127.0.0.1:3000",
         "http://127.0.0.1:8000",
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
         "http://localhost:8000",
+        "http://127.0.0.1:3000",
         "http://127.0.0.1:8000",
     ]
-CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ['*']
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
 
 # Default primary key field type
